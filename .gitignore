@@ -1,2 +1,3 @@
 # Ignore compiled C code
 main
+/.vscode

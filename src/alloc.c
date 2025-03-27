@@ -136,8 +136,16 @@ void *coalesce(free_block *block) {
  * @param size The amount of memory to allocate
  * @return A pointer to the allocated memory
  */
-void *do_alloc(size_t size) {
-    return NULL;
+int *do_alloc(size_t size) {
+    int *pAllocatedMemory = sbrk(size);
+    printf("sbrk function to allocated memory: %p", pAllocatedMemory);
+
+    // If returned pointer is an invalid memory address then it failed
+    if (pAllocatedMemory == NULL) {
+        printf("System Break increase failed, lol");
+        return NULL;
+    }
+    return pAllocatedMemory;
 }
 
 /**
@@ -147,7 +155,35 @@ void *do_alloc(size_t size) {
  * @return A pointer to the requested block of memory
  */
 void *tumalloc(size_t size) {
-    return NULL;
+
+    free_block *curr = HEAD;
+    
+    // Check if head is Null (No free memory)
+    if (HEAD == NULL) {
+        // Increase memory
+        int *ptr = do_alloc(size);
+        // Return pointer to new memory address
+        return ptr;
+    }
+    // If there is memory in free list (Memory available)
+    else {
+        // Iterate through free linked list
+        while (curr != NULL) {
+            // If current block is big enough for requested size
+            if (size <= curr->size) {
+                header *header = split(curr, size+sizeof(header));
+                remove_free_block(curr);
+                header->size = size;
+                header->magic = 0x01234567;
+                return header + 1;
+            }
+            // If current node was not big enough go to next block
+            curr = curr->next;
+        }
+        // If no block is big enough then increase memory
+        int *ptr = do_alloc(size);
+        return ptr;
+    }
 }
 
 /**
@@ -179,4 +215,22 @@ void *turealloc(void *ptr, size_t new_size) {
  */
 void tufree(void *ptr) {
 
+    // free_block *curr = *ptr;
+
+    // Current block still in memory
+    header *blocks = *ptr;
+
+    blocks->(blocks *)ptr-1;
+    
+    if (blocks->magic = 0x1234567) {
+        curr -> (curr *)block;
+        curr.size->blocks.size;
+        curr.next->HEAD;
+        HEAD->curr;
+        coalesce(curr);
+    }
+    else {
+        printf("Memory Corruption Detected")
+        abort();
+    }
 }

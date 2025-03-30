@@ -138,14 +138,18 @@ void *coalesce(free_block *block) {
  */
 int *do_alloc(size_t size) {
     int *pAllocatedMemory = sbrk(size);
-    printf("sbrk function to allocated memory: %p", pAllocatedMemory);
+    printf("Gathered (%ld) more memory usign sbrk. New allocated memory: %p\n", size, pAllocatedMemory);
+
+    header *hdr = (header *)pAllocatedMemory;
+    hdr->size = size;
+    hdr->magic = 0x01234567;
 
     // If returned pointer is an invalid memory address then it failed
     if (pAllocatedMemory == NULL) {
-        printf("System Break increase failed, lol");
+        printf("System Break increase failed, lol\n");
         return NULL;
     }
-    return pAllocatedMemory;
+    return (void *)(hdr + 1);
 }
 
 /**
@@ -155,9 +159,7 @@ int *do_alloc(size_t size) {
  * @return A pointer to the requested block of memory
  */
 void *tumalloc(size_t size) {
-
     free_block *curr = HEAD;
-    
     // Check if head is Null (No free memory)
     if (HEAD == NULL) {
         // Increase memory
@@ -171,17 +173,20 @@ void *tumalloc(size_t size) {
         while (curr != NULL) {
             // If current block is big enough for requested size
             if (size <= curr->size) {
-                header *header = split(curr, size+sizeof(header));
+                header *hdr = split(curr, size+sizeof(hdr));
                 remove_free_block(curr);
-                header->size = size;
-                header->magic = 0x01234567;
-                return header + 1;
+                hdr->size = size;
+                hdr->magic = 0x01234567;
+                printf("Found block in free list: %p\n", hdr+1);
+                return hdr + 1;
             }
             // If current node was not big enough go to next block
+            printf("Current node not big enough in free list going to next block\n");
             curr = curr->next;
         }
         // If no block is big enough then increase memory
         int *ptr = do_alloc(size);
+        printf("No block in free list big enough, increased using sbrk. New pointer: %p\n", ptr);
         return ptr;
     }
 }
@@ -215,22 +220,27 @@ void *turealloc(void *ptr, size_t new_size) {
  */
 void tufree(void *ptr) {
 
-    // free_block *curr = *ptr;
+    header *hdr = (header *)ptr-1;
 
-    // Current block still in memory
-    header *blocks = *ptr;
+    if (HEAD == NULL) {
+        printf("Head is null\n");
+    }
 
-    blocks->(blocks *)ptr-1;
+    if (ptr == NULL) {
+        printf("Pointer is null\n");
+    }
+
     
-    if (blocks->magic = 0x1234567) {
-        curr -> (curr *)block;
-        curr.size->blocks.size;
-        curr.next->HEAD;
-        HEAD->curr;
-        coalesce(curr);
+    if (hdr->magic == 0x01234567) {
+        printf("Does this run\n");
+        free_block *free = (free_block *)hdr;
+        free->size = hdr->size;
+        free->next=HEAD;
+        HEAD = free;
+        coalesce(free);
     }
     else {
-        printf("Memory Corruption Detected")
+        printf("Memory Corruption Detected\n");
         abort();
     }
 }

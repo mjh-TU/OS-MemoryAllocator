@@ -140,6 +140,8 @@ int main(int argc, char** argv) {
     if(thing == NULL) {
         printf("Failed to allocate memory\n");
         return 1;
+    } else {
+        printf("Succeeded in allocating memory (test part 1)\n");
     }
 
     // Set some values in the allocated memory
@@ -159,6 +161,8 @@ int main(int argc, char** argv) {
     if(other_thing == NULL) {
         printf("Failed to allocate memory\n");
         return 1;
+    } else {
+        printf("Succeeded in allocating memory (test part 2)\n"); 
     }
 
     // Set some values in the allocated memory
@@ -182,6 +186,8 @@ int main(int argc, char** argv) {
     if(HEAD == NULL) {
         printf("Failed to allocate memory\n");
         return 1;
+    } else {
+        printf("Succeeded in allocating memory (test part 3)\n"); 
     }
 
     // Add some elements to the list
@@ -200,6 +206,8 @@ int main(int argc, char** argv) {
     if(ret != 0) {
         printf("Failed to remove element\n");
         return 1;
+    } else {
+        printf("Removed element from list (test part 4)\n");
     }
 
     // Print all elements in the list

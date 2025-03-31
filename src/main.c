@@ -180,6 +180,7 @@ int main(int argc, char** argv) {
     tufree(other_thing);
 
     // Create a new list
+    printf("Creating new list\n");
     HEAD = list_new(5);
 
     // Check if the allocation was successful
@@ -215,6 +216,7 @@ int main(int argc, char** argv) {
 
     // Remove all elements from the list
     list_remove_all(HEAD);
+    printf("Removed all elements from the list\n");
 
     // Allocate memory and initialize to 0
     int *more_things = tucalloc(10, sizeof(int));
@@ -223,6 +225,8 @@ int main(int argc, char** argv) {
     if(more_things == NULL) {
         printf("Failed to allocate memory\n");
         return 1;
+    } else {
+        printf("Allocated more memory. Part 5\n");
     }
 
     // Set some values in the allocated memory

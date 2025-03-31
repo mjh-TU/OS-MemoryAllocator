@@ -137,18 +137,20 @@ void *coalesce(free_block *block) {
  * @return A pointer to the allocated memory
  */
 int *do_alloc(size_t size) {
-    int *pAllocatedMemory = sbrk(size);
+    int *pAllocatedMemory = sbrk(size + sizeof(header));
     printf("Gathered (%ld) more memory usign sbrk. New allocated memory: %p\n", size, pAllocatedMemory);
-
-    header *hdr = (header *)pAllocatedMemory;
-    hdr->size = size;
-    hdr->magic = 0x01234567;
 
     // If returned pointer is an invalid memory address then it failed
     if (pAllocatedMemory == NULL) {
         printf("System Break increase failed, lol\n");
         return NULL;
     }
+
+    header *hdr = (header *)pAllocatedMemory;
+    hdr->size = size;
+    hdr->magic = 0x01234567;
+
+
     return (void *)(hdr + 1);
 }
 
@@ -173,11 +175,19 @@ void *tumalloc(size_t size) {
         while (curr != NULL) {
             // If current block is big enough for requested size
             if (size <= curr->size) {
-                header *hdr = split(curr, size+sizeof(hdr));
+                header *hdr = split(curr, size+sizeof(header));
+                printf("Found block in free list: %p\n", hdr+1);
+
+                if (hdr != NULL) {
+                    printf("Successfully split block\n");
+                } else {
+                    printf("Block cannot be split\n");
+                    hdr = (header *)curr;
+                }
+                // Remove block from free list
                 remove_free_block(curr);
                 hdr->size = size;
                 hdr->magic = 0x01234567;
-                printf("Found block in free list: %p\n", hdr+1);
                 return hdr + 1;
             }
             // If current node was not big enough go to next block
@@ -199,7 +209,6 @@ void *tumalloc(size_t size) {
  * @return A pointer to the requested block of initialized memory
  */
 void *tucalloc(size_t num, size_t size) {
-    return NULL;
 }
 
 /**
@@ -232,7 +241,6 @@ void tufree(void *ptr) {
 
     
     if (hdr->magic == 0x01234567) {
-        printf("Does this run\n");
         free_block *free = (free_block *)hdr;
         free->size = hdr->size;
         free->next=HEAD;

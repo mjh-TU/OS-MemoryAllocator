@@ -197,6 +197,7 @@ int main(int argc, char** argv) {
     list_add(HEAD, 30);
     list_add(HEAD, 40);
 
+
     // Print all elements in the list
     list_print_all(HEAD);
 
@@ -244,6 +245,7 @@ int main(int argc, char** argv) {
     for(int i=0; i<10; i++) {
         printf("%d\n", more_things[i]);
     }
+    printf("Part 6: Print all elements in list\n");
 
     // Reallocate memory
     int *bigger_things = turealloc(more_things, 20*sizeof(int));
@@ -252,6 +254,8 @@ int main(int argc, char** argv) {
     if(bigger_things == NULL) {
         printf("Failed to allocate memory\n");
         return 1;
+    } else {
+        printf("Reallocation was successful. Part 7\n");
     }
 
     // Set some values in the allocated memory
@@ -264,6 +268,7 @@ int main(int argc, char** argv) {
         printf("%d\n", bigger_things[i]);
     }
 
+    printf("Part 8, lastly free memory\n");
     // Free the allocated memory
     tufree(more_things);
 

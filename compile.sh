@@ -1,3 +1,3 @@
 #! /bin/bash
-gcc ./src/main.c ./src/alloc.c -o main
+gcc -fsanitize=address -g ./src/main.c ./src/alloc.c -o main
 ./main

@@ -149,12 +149,11 @@ void *do_alloc(size_t size) {
     intptr_t adjust = (align==0)?0:ALIGNMENT-align;
 
     int *pAllocatedMemory = sbrk(size + sizeof(header) + adjust);
-    printf("doalloc: Gathered (%ld) more memory usign sbrk. New allocated memory: %p\n", size, pAllocatedMemory);
 
     // If returned pointer is an invalid memory address then it failed
     if (pAllocatedMemory == NULL) {
         printf("doalloc: System Break increase failed, lol\n");
-        return NULL;
+        abort();
     }
 
     void *aligned = (void *)((intptr_t)pAllocatedMemory + adjust);
@@ -189,12 +188,9 @@ void *tumalloc(size_t size) {
             if (size+sizeof(header) <= curr->size) {
                 free_block *free = split(curr, size+sizeof(header));
                 header *hdr = (header *)free;
-                printf("tumalloc: Found block in free list: %p\n", hdr+1);
 
                 if (hdr != NULL) {
-                    printf("tumalloc: Successfully split block\n");
                 } else {
-                    printf("tumalloc: Block cannot be split\n");
                     hdr = (header *)curr;
                 }
                 // Remove block from free list
@@ -204,12 +200,10 @@ void *tumalloc(size_t size) {
                 return hdr + sizeof(header);
             }
             // If current node was not big enough go to next block
-            printf("tumalloc: Current node not big enough in free list going to next block\n");
             curr = curr->next;
         }
         // If no block is big enough then increase memory
         int *ptr = do_alloc(size);
-        printf("tumalloc: No block in free list big enough, increased using sbrk. New pointer: %p\n", ptr);
         return ptr;
     }
 }
@@ -222,7 +216,7 @@ void *tumalloc(size_t size) {
  * @return A pointer to the requested block of initialized memory
  */
 void *tucalloc(size_t num, size_t size) {
-    int totalsize = num * size;
+    size_t totalsize = num * size;
 
     int *memory = tumalloc(totalsize);
 
@@ -239,15 +233,14 @@ void *tucalloc(size_t num, size_t size) {
 void *turealloc(void *ptr, size_t new_size) {
     if (ptr == NULL) {
         printf("turealloc: Pointer is null\n");
-        return NULL;
+        abort();
     }
-    
+
     header *hdr = (header *)(ptr-sizeof(header));
 
-    printf("turealloc: Increasing by: %ld\n", new_size);
     int *new_chunk = tumalloc(new_size);
     memcpy(new_chunk, ptr, hdr->size);
-    tufree(ptr);
+    // tufree(ptr);
 
     return new_chunk;
 }
@@ -258,29 +251,34 @@ void *turealloc(void *ptr, size_t new_size) {
  * @param ptr Pointer to the allocated piece of memory
  */
 void tufree(void *ptr) {
-    header *hdr = (header *)(ptr-sizeof(header));
 
-    printf("tufree: Pointer for free %p\n", ptr);
-    printf("tufree: Header for free %p\n", hdr);
-    printf("tufree: Size of header %zu\n", sizeof(header));
+    // if (hdr->magic == 0x10110111) {
+    //     printf("tufree: Memory has already been freed\n");
+    //     return;
+    // }
 
     if (HEAD == NULL) {
         printf("tufree: Head is null\n");
     }
     if (ptr == NULL) {
         printf("tufree: Pointer is null\n");
+        abort();
     }
-    printf("tufree: Header Magic %d\n", hdr->magic);
+
+    header *hdr = (header *)(ptr-sizeof(header));
+
     if (hdr->magic == 0x01234567) {
-        printf("tufree: Attempting to free block at %p\n", ptr);
+        // printf("tufree: Attempting to free block at %p\n", ptr);
         free_block *free = (free_block *)hdr;
         free->size = hdr->size;
+        // Set a value for purpose of checking if memory has already been freed
+        // hdr->magic = 0x10110111;
         // Add to front of free list
         free->next=HEAD;
         // Set as new head
         HEAD = free;
         coalesce(free);
-        printf("tufree: Memory was freed and coalesce. New free list HEAD %p\n", HEAD);
+        // printf("tufree: Memory was freed and coalesce. New free list HEAD %p\n", HEAD);
     }
     else {
         printf("tufree: Memory Corruption Detected\n");

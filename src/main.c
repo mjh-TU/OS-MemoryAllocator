@@ -138,10 +138,10 @@ int main(int argc, char** argv) {
 
     // Check if the allocation was successful
     if(thing == NULL) {
-        printf("Failed to allocate memory\n");
+        printf("Main: Failed to allocate memory\n");
         return 1;
     } else {
-        printf("Succeeded in allocating memory (test part 1)\n");
+        printf("Main: Succeeded in allocating memory (test part 1)\n");
     }
 
     // Set some values in the allocated memory
@@ -159,10 +159,10 @@ int main(int argc, char** argv) {
 
     // Check if the allocation was successful
     if(other_thing == NULL) {
-        printf("Failed to allocate memory\n");
+        printf("Main: Failed to allocate memory\n");
         return 1;
     } else {
-        printf("Succeeded in allocating memory (test part 2)\n"); 
+        printf("Main: Succeeded in allocating memory (test part 2)\n"); 
     }
 
     // Set some values in the allocated memory
@@ -180,15 +180,15 @@ int main(int argc, char** argv) {
     tufree(other_thing);
 
     // Create a new list
-    printf("Creating new list\n");
+    printf("Main: Creating new list\n");
     HEAD = list_new(5);
 
     // Check if the allocation was successful
     if(HEAD == NULL) {
-        printf("Failed to allocate memory\n");
+        printf("Main: Failed to allocate memory\n");
         return 1;
     } else {
-        printf("Succeeded in allocating memory (test part 3)\n"); 
+        printf("Main: Succeeded in allocating memory (test part 3)\n"); 
     }
 
     // Add some elements to the list
@@ -206,10 +206,10 @@ int main(int argc, char** argv) {
 
     // Check if the removal was successful
     if(ret != 0) {
-        printf("Failed to remove element\n");
+        printf("Main: Failed to remove element\n");
         return 1;
     } else {
-        printf("Removed element from list (test part 4)\n");
+        printf("Main: Removed element from list (test part 4)\n");
     }
 
     // Print all elements in the list
@@ -217,17 +217,17 @@ int main(int argc, char** argv) {
 
     // Remove all elements from the list
     list_remove_all(HEAD);
-    printf("Removed all elements from the list\n");
+    printf("Main: Removed all elements from the list\n");
 
     // Allocate memory and initialize to 0
     int *more_things = tucalloc(10, sizeof(int));
 
     // Check if the allocation was successful
     if(more_things == NULL) {
-        printf("Failed to allocate memory\n");
+        printf("Main: Failed to allocate memory\n");
         return 1;
     } else {
-        printf("Allocated more memory. Part 5\n");
+        printf("Main: Allocated more memory. Part 5\n");
     }
 
     // Set some values in the allocated memory
@@ -245,17 +245,17 @@ int main(int argc, char** argv) {
     for(int i=0; i<10; i++) {
         printf("%d\n", more_things[i]);
     }
-    printf("Part 6: Print all elements in list\n");
+    printf("Main: Part 6: Print all elements in list\n");
 
     // Reallocate memory
     int *bigger_things = turealloc(more_things, 20*sizeof(int));
 
     // Check if the reallocation was successful
     if(bigger_things == NULL) {
-        printf("Failed to allocate memory\n");
+        printf("Main: Failed to allocate memory\n");
         return 1;
     } else {
-        printf("Reallocation was successful. Part 7\n");
+        printf("Main: Reallocation was successful. Part 7\n");
     }
 
     // Set some values in the allocated memory
@@ -268,7 +268,7 @@ int main(int argc, char** argv) {
         printf("%d\n", bigger_things[i]);
     }
 
-    printf("Part 8, lastly free memory\n");
+    printf("Main: Part 8, lastly free memory\n");
     // Free the allocated memory
     tufree(more_things);
 

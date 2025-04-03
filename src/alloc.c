@@ -149,11 +149,11 @@ void *do_alloc(size_t size) {
     intptr_t adjust = (align==0)?0:ALIGNMENT-align;
 
     int *pAllocatedMemory = sbrk(size + sizeof(header) + adjust);
-    printf("Gathered (%ld) more memory usign sbrk. New allocated memory: %p\n", size, pAllocatedMemory);
+    printf("doalloc: Gathered (%ld) more memory usign sbrk. New allocated memory: %p\n", size, pAllocatedMemory);
 
     // If returned pointer is an invalid memory address then it failed
     if (pAllocatedMemory == NULL) {
-        printf("System Break increase failed, lol\n");
+        printf("doalloc: System Break increase failed, lol\n");
         return NULL;
     }
 
@@ -189,12 +189,12 @@ void *tumalloc(size_t size) {
             if (size+sizeof(header) <= curr->size) {
                 free_block *free = split(curr, size+sizeof(header));
                 header *hdr = (header *)free;
-                printf("Found block in free list: %p\n", hdr+1);
+                printf("tumalloc: Found block in free list: %p\n", hdr+1);
 
                 if (hdr != NULL) {
-                    printf("Successfully split block\n");
+                    printf("tumalloc: Successfully split block\n");
                 } else {
-                    printf("Block cannot be split\n");
+                    printf("tumalloc: Block cannot be split\n");
                     hdr = (header *)curr;
                 }
                 // Remove block from free list
@@ -204,12 +204,12 @@ void *tumalloc(size_t size) {
                 return hdr + sizeof(header);
             }
             // If current node was not big enough go to next block
-            printf("Current node not big enough in free list going to next block\n");
+            printf("tumalloc: Current node not big enough in free list going to next block\n");
             curr = curr->next;
         }
         // If no block is big enough then increase memory
         int *ptr = do_alloc(size);
-        printf("No block in free list big enough, increased using sbrk. New pointer: %p\n", ptr);
+        printf("tumalloc: No block in free list big enough, increased using sbrk. New pointer: %p\n", ptr);
         return ptr;
     }
 }
@@ -238,11 +238,13 @@ void *tucalloc(size_t num, size_t size) {
  */
 void *turealloc(void *ptr, size_t new_size) {
     if (ptr == NULL) {
-        printf("Pointer is null\n");
+        printf("turealloc: Pointer is null\n");
         return NULL;
     }
-    header *hdr = (header *)ptr-1;
-    printf("Increasing by: %ld\n", new_size);
+    
+    header *hdr = (header *)(ptr-sizeof(header));
+
+    printf("turealloc: Increasing by: %ld\n", new_size);
     int *new_chunk = tumalloc(new_size);
     memcpy(new_chunk, ptr, hdr->size);
     tufree(ptr);
@@ -256,18 +258,21 @@ void *turealloc(void *ptr, size_t new_size) {
  * @param ptr Pointer to the allocated piece of memory
  */
 void tufree(void *ptr) {
-    header *hdr = (header *)ptr-sizeof(header);
-    printf("Pointer for free %p\n", ptr);
-    printf("Header for free %p\n", hdr);
-    printf("Size of header %zu\n", sizeof(header));
+    header *hdr = (header *)(ptr-sizeof(header));
+
+    printf("tufree: Pointer for free %p\n", ptr);
+    printf("tufree: Header for free %p\n", hdr);
+    printf("tufree: Size of header %zu\n", sizeof(header));
+
     if (HEAD == NULL) {
-        printf("Head is null\n");
+        printf("tufree: Head is null\n");
     }
     if (ptr == NULL) {
-        printf("Pointer is null\n");
+        printf("tufree: Pointer is null\n");
     }
+    printf("tufree: Header Magic %d\n", hdr->magic);
     if (hdr->magic == 0x01234567) {
-        printf("Attempting to free block at %p\n", ptr);
+        printf("tufree: Attempting to free block at %p\n", ptr);
         free_block *free = (free_block *)hdr;
         free->size = hdr->size;
         // Add to front of free list
@@ -275,10 +280,10 @@ void tufree(void *ptr) {
         // Set as new head
         HEAD = free;
         coalesce(free);
-        printf("Memory was freed and coalesce. New free list HEAD %p\n", HEAD);
+        printf("tufree: Memory was freed and coalesce. New free list HEAD %p\n", HEAD);
     }
     else {
-        printf("Memory Corruption Detected\n");
+        printf("tufree: Memory Corruption Detected\n");
         abort();
     }
 }

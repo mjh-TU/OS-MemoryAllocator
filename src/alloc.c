@@ -10,6 +10,15 @@
 
 static free_block *HEAD = NULL; /**< Pointer to the first element of the free list */
 
+// Create hash table for already freed memory blocks to prevent double freeing
+typedef struct freed_block {
+    void *ptr;
+    struct freed_block *next; 
+} freed_block;
+
+freed_block *freed_list = NULL; // Head of the freed list
+
+
 /**
  * Split a free block into two blocks
  *
@@ -216,6 +225,10 @@ void *tumalloc(size_t size) {
  * @return A pointer to the requested block of initialized memory
  */
 void *tucalloc(size_t num, size_t size) {
+    if (num <= 0) {
+        abort();
+    } 
+
     size_t totalsize = num * size;
 
     int *memory = tumalloc(totalsize);
@@ -240,7 +253,7 @@ void *turealloc(void *ptr, size_t new_size) {
 
     int *new_chunk = tumalloc(new_size);
     memcpy(new_chunk, ptr, hdr->size);
-    // tufree(ptr);
+    tufree(ptr);
 
     return new_chunk;
 }
@@ -252,10 +265,15 @@ void *turealloc(void *ptr, size_t new_size) {
  */
 void tufree(void *ptr) {
 
-    // if (hdr->magic == 0x10110111) {
-    //     printf("tufree: Memory has already been freed\n");
-    //     return;
-    // }
+    // Check free list to see if we have already freed this memory
+    freed_block *curr = freed_list;
+    while (curr != NULL) {
+        if (curr->ptr == ptr) {
+            printf("tufree: Memory already freed\n");
+            return;
+        }
+        curr = curr->next;
+    }
 
     if (HEAD == NULL) {
         printf("tufree: Head is null\n");
@@ -267,16 +285,21 @@ void tufree(void *ptr) {
 
     header *hdr = (header *)(ptr-sizeof(header));
 
+
     if (hdr->magic == 0x01234567) {
         // printf("tufree: Attempting to free block at %p\n", ptr);
         free_block *free = (free_block *)hdr;
         free->size = hdr->size;
-        // Set a value for purpose of checking if memory has already been freed
-        // hdr->magic = 0x10110111;
         // Add to front of free list
         free->next=HEAD;
         // Set as new head
         HEAD = free;
+        // Add to freed list to prevent double freeing
+        freed_block *new_freed = (freed_block *)malloc(sizeof(freed_block));
+        new_freed->ptr = ptr;
+        new_freed->next = freed_list;
+        freed_list = new_freed;
+        
         coalesce(free);
         // printf("tufree: Memory was freed and coalesce. New free list HEAD %p\n", HEAD);
     }
